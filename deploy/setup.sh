@@ -12,7 +12,7 @@
 # ==============================================================
 set -euo pipefail
 
-APP_DIR=/opt/idn-galaxy
+APP_DIR=/opt/idnlab
 APP_USER=ubuntu   # Amazon Linux: ganti jadi ec2-user
 
 echo ">> 1. Install Node.js 20"
@@ -42,13 +42,13 @@ if [ ! -f "${APP_DIR}/.env" ]; then
 fi
 
 echo ">> 5. Pasang & aktifkan service systemd"
-sudo cp "${APP_DIR}/deploy/idn-galaxy.service" /etc/systemd/system/
+sudo cp "${APP_DIR}/deploy/idnlab.service" /etc/systemd/system/
 sudo systemctl daemon-reload
-sudo systemctl enable idn-galaxy   # <-- kunci auto-start saat boot
-sudo systemctl restart idn-galaxy
+sudo systemctl enable idnlab   # <-- kunci auto-start saat boot
+sudo systemctl restart idnlab
 
 echo ">> Selesai. Cek status:"
-echo "   sudo systemctl status idn-galaxy"
+echo "   sudo systemctl status idnlab"
 echo "   curl localhost:3000/health"
 echo ""
 echo ">> Sekarang buat AMI dari instance ini. Instance baru dari AMI"

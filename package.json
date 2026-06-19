@@ -1,7 +1,7 @@
 {
-  "name": "idn-galaxy",
+  "name": "idnlab",
   "version": "2.0.0",
-  "description": "Website training ID-Networkers bertema Samsung Galaxy. Katalog dinamis (MariaDB), panel admin, pendaftaran + QRIS, bukti upload ke S3.",
+  "description": "Website training ID-Networkers bertema LAB. Katalog dinamis (MariaDB), panel admin, pendaftaran + QRIS, bukti upload ke S3.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

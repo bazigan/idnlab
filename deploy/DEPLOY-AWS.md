@@ -12,10 +12,10 @@ chmod +x deploy/setup.sh
 sudo deploy/setup.sh
 ```
 
-Script ini install Node.js, taruh app di `/opt/idn-galaxy`, install dependency, dan meng-`enable` service `systemd`. Cek:
+Script ini install Node.js, taruh app di `/opt/idnlab`, install dependency, dan meng-`enable` service `systemd`. Cek:
 
 ```bash
-sudo systemctl status idn-galaxy
+sudo systemctl status idnlab
 curl localhost:3000/health     # harus balas: OK
 ```
 
@@ -24,7 +24,7 @@ curl localhost:3000/health     # harus balas: OK
 Karena service sudah di-`enable`, instance turunan AMI akan auto-start. Buat AMI:
 
 - Console: pilih instance → Actions → Image and templates → Create image, atau
-- CLI: `aws ec2 create-image --instance-id i-xxxx --name idn-galaxy-v1`
+- CLI: `aws ec2 create-image --instance-id i-xxxx --name idnlab-v1`
 
 ## 3. Launch Template + Auto Scaling
 
@@ -40,8 +40,8 @@ aws ssm get-parameter --name "/idn/admin-password" --with-decryption \
   echo "ADMIN_PASSWORD=$(cat /tmp/pw)"
   echo "ADMIN_PHONE=628xxxxxxxxxx"
   # ...variabel lain sesuai .env.example
-} | sudo tee /opt/idn-galaxy/.env > /dev/null
-sudo systemctl restart idn-galaxy
+} | sudo tee /opt/idnlab/.env > /dev/null
+sudo systemctl restart idnlab
 ```
 
 Beri instance **IAM role** yang punya izin baca SSM (`ssm:GetParameter`) supaya user-data di atas bisa jalan.
@@ -58,12 +58,12 @@ Lalu buat Auto Scaling Group yang memakai Launch Template ini. Setiap instance b
 App ini sudah siap untuk banyak instance di belakang Auto Scaling:
 
 - **Data** (katalog & pendaftaran) di **RDS MariaDB** — tersinkron antar instance. Buat RDS, isi `DB_*` di `.env`. Tabel dibuat otomatis saat app pertama jalan.
-- **File aplikasi** di **EFS** — mount permanen di AMI (mis. ke `/opt/idn-galaxy`). Satu `.env` ikut tersinkron ke semua instance.
+- **File aplikasi** di **EFS** — mount permanen di AMI (mis. ke `/opt/idnlab`). Satu `.env` ikut tersinkron ke semua instance.
 - **Bukti pembayaran** di **S3** — isi `S3_BUCKET` di `.env`. Beri IAM Role instance izin `s3:PutObject` dan `s3:GetObject` pada bucket itu. Admin tetap bisa lihat bukti via link sementara dari app.
 
 IAM Role instance juga perlu izin `ssm:GetParameter` kalau secret diambil dari SSM (lihat contoh user-data di atas).
 
 ## Tips
 
-- Lihat log: `journalctl -u idn-galaxy -f`
+- Lihat log: `journalctl -u idnlab -f`
 - Update versi app: bake AMI baru → ganti AMI di Launch Template → instance refresh di ASG. Hindari edit manual di tiap instance.

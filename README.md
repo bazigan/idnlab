@@ -1,6 +1,6 @@
-# ID-Networkers Galaxy
+# ID-Networkers LAB
 
-Website training bertema **Samsung Galaxy**: katalog dinamis, panel admin, dan pendaftaran + pembayaran QRIS. Dibuat dengan **Node.js (Express)**.
+Website training bertema **LAB**: katalog dinamis, panel admin, dan pendaftaran + pembayaran QRIS. Dibuat dengan **Node.js (Express)**.
 
 - **Data** (katalog & pendaftaran) disimpan di **MariaDB / MySQL** (RDS).
 - **Foto bukti pembayaran** diunggah ke **Amazon S3**, dan tetap bisa dilihat langsung dari panel admin lewat link sementara — tanpa buka konsol S3.
@@ -65,7 +65,7 @@ Buka **http://localhost:3000** — admin di **/admin** (password default `admin1
 ## Struktur folder
 
 ```
-idn-galaxy/
+idnlab/
 ├── server.js              # File utama: semua route
 ├── lib/
 │   ├── db.js              # Koneksi & query MariaDB (buat tabel + seed otomatis)
