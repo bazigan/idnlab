@@ -1,0 +1,124 @@
+<%- include("partials/head", { pageTitle: "Panel Admin" }) %>
+<%- include("partials/nav") %>
+
+<main class="page admin">
+  <div class="wrap">
+    <div class="admin-top">
+      <div>
+        <h1>Panel Admin</h1>
+        <p class="muted">Kelola katalog training dan lihat data pendaftar.</p>
+      </div>
+      <a href="/admin/logout" class="btn btn-ghost" data-ripple>Logout</a>
+    </div>
+
+    <div class="admin-grid">
+      <!-- ============ FORM TAMBAH / EDIT ============ -->
+      <section class="card-flat">
+        <h2><%= editing ? "Edit Training" : "Tambah Training" %></h2>
+        <form
+          method="POST"
+          action="<%= editing ? '/admin/training/' + editing.id + '/update' : '/admin/training' %>"
+          class="admin-form"
+        >
+          <label>Judul
+            <input name="title" value="<%= editing ? editing.title : '' %>" required />
+          </label>
+
+          <div class="row">
+            <label>Kategori
+              <select name="category">
+                <% const kategori = ['network','security','dev','cloud']; %>
+                <% kategori.forEach(function (k) { %>
+                  <option value="<%= k %>" <%= editing && editing.category === k ? 'selected' : '' %>><%= k %></option>
+                <% }); %>
+              </select>
+            </label>
+            <label>Level
+              <input name="level" value="<%= editing ? editing.level : 'Pemula' %>" />
+            </label>
+          </div>
+
+          <label>Deskripsi
+            <textarea name="description" rows="2"><%= editing ? editing.description : '' %></textarea>
+          </label>
+
+          <div class="row">
+            <label>Durasi
+              <input name="duration" value="<%= editing ? editing.duration : '4 hari' %>" />
+            </label>
+            <label>Sertifikat
+              <input name="certificate" value="<%= editing ? editing.certificate : 'Sertifikat IDN' %>" />
+            </label>
+          </div>
+
+          <div class="row">
+            <label>Harga (angka)
+              <input type="number" name="price" value="<%= editing ? editing.price : '' %>" required />
+            </label>
+            <label>Warna kartu (CSS gradient)
+              <input name="color" value="<%= editing ? editing.color : 'linear-gradient(135deg,#1428a0,#27c4ff)' %>" />
+            </label>
+          </div>
+
+          <div class="row">
+            <button type="submit" class="btn btn-grad" data-ripple><%= editing ? "Simpan Perubahan" : "Tambah ke Katalog" %></button>
+            <% if (editing) { %><a href="/admin" class="btn btn-ghost" data-ripple>Batal</a><% } %>
+          </div>
+        </form>
+      </section>
+
+      <!-- ============ DAFTAR TRAINING ============ -->
+      <section class="card-flat">
+        <h2>Katalog (<%= trainings.length %>)</h2>
+        <div class="list">
+          <% trainings.forEach(function (t) { %>
+            <div class="list-item">
+              <span class="swatch" style="background: <%= t.color %>"></span>
+              <div class="list-info">
+                <b><%= t.title %></b>
+                <small><%= t.category %> • <%= rupiah(t.price) %></small>
+              </div>
+              <div class="list-act">
+                <a href="/admin/edit/<%= t.id %>" class="mini" data-ripple>Edit</a>
+                <form method="POST" action="/admin/training/<%= t.id %>/delete" onsubmit="return confirm('Hapus training ini?')">
+                  <button class="mini danger" data-ripple>Hapus</button>
+                </form>
+              </div>
+            </div>
+          <% }); %>
+          <% if (trainings.length === 0) { %><p class="muted">Belum ada training.</p><% } %>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============ DAFTAR PENDAFTAR ============ -->
+    <section class="card-flat">
+      <h2>Pendaftar (<%= registrations.length %>)</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Kode</th><th>Nama</th><th>Training</th><th>Kontak</th><th>Biaya</th><th>Status</th><th>Bukti</th></tr>
+          </thead>
+          <tbody>
+            <% registrations.forEach(function (r) { %>
+              <tr>
+                <td><%= r.id %></td>
+                <td><%= r.name %></td>
+                <td><%= r.trainingTitle %></td>
+                <td><%= r.email %><br /><small><%= r.phone %></small></td>
+                <td><%= rupiah(r.amount) %></td>
+                <td><span class="status"><%= r.status %></span></td>
+                <td><% if (r.proofFile) { %><a href="<%= r.proofFile %>" target="_blank">Lihat</a><% } else { %>-<% } %></td>
+              </tr>
+            <% }); %>
+            <% if (registrations.length === 0) { %>
+              <tr><td colspan="7" class="muted" style="text-align:center">Belum ada pendaftar.</td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</main>
+
+<%- include("partials/footer") %>

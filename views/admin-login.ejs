@@ -1,0 +1,22 @@
+<%- include("partials/head", { pageTitle: "Login Admin" }) %>
+<%- include("partials/nav") %>
+
+<main class="page">
+  <div class="wrap narrow">
+    <div class="panel reveal in" style="max-width:440px;margin-inline:auto">
+      <div class="panel-head" style="background: linear-gradient(135deg,#08080c,#1428a0)">
+        <h1>Login Admin</h1>
+        <p>Masuk untuk mengelola katalog training.</p>
+      </div>
+      <form class="panel-body" method="POST" action="/admin/login">
+        <% if (error) { %><div class="alert"><%= error %></div><% } %>
+        <label>Password
+          <input type="password" name="password" placeholder="Masukkan password admin" required autofocus />
+        </label>
+        <button type="submit" class="btn btn-dark full" data-ripple>Masuk</button>
+      </form>
+    </div>
+  </div>
+</main>
+
+<%- include("partials/footer") %>

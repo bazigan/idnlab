@@ -1,0 +1,32 @@
+<%- include("partials/head", { pageTitle: "Selesai — " + reg.trainingTitle }) %>
+<%- include("partials/nav") %>
+
+<main class="page">
+  <div class="wrap narrow">
+    <div class="steps">
+      <span class="step done">1. Isi Data</span>
+      <span class="step done">2. Bayar</span>
+      <span class="step active">3. Selesai</span>
+    </div>
+
+    <div class="panel reveal in">
+      <div class="panel-body center">
+        <div class="check">✓</div>
+        <h1>Pendaftaran berhasil!</h1>
+        <p class="success-text">Terima kasih, <b><%= reg.name %></b>. Bukti pembayaranmu sudah kami terima dan konfirmasi sudah dikirim ke <b><%= reg.email %></b>.</p>
+
+        <div class="summary">
+          <div><span>Kode</span><b><%= reg.id %></b></div>
+          <div><span>Training</span><b><%= reg.trainingTitle %></b></div>
+          <div><span>Biaya</span><b><%= rupiah(reg.amount) %></b></div>
+          <div><span>Status</span><b><%= reg.status %></b></div>
+        </div>
+
+        <a href="<%= waLink %>" target="_blank" class="btn btn-grad full" data-ripple>Kirim bukti ke WhatsApp admin</a>
+        <a href="/" class="btn btn-ghost full" data-ripple>Kembali ke beranda</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<%- include("partials/footer") %>

@@ -1,0 +1,114 @@
+<%- include("partials/head", { pageTitle: "ID-Networkers Galaxy — Upgrade Your Skills" }) %>
+<%- include("partials/nav") %>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="wrap">
+    <span class="eyebrow"><span class="pulse"></span> Training Center & Sertifikasi IT #1 Indonesia</span>
+    <h1>Upgrade Your Skills.<br /><span class="g">Upgrade Your Life.</span></h1>
+    <p class="lead">Kuasai Mikrotik, Cisco, Juniper, Fortigate, VMware, Cyber Security, sampai Cloud & Programming. Belajar langsung praktek di perangkat asli — bukan sekadar simulator.</p>
+    <div class="hero-cta">
+      <a href="#training" class="btn btn-grad" data-ripple>Lihat Semua Training</a>
+      <a href="#kenapa" class="btn btn-ghost" data-ripple>Kenapa IDN?</a>
+    </div>
+    <div class="hero-note">
+      <span><span class="tick">✓</span> 1 orang 1 perangkat lab</span>
+      <span><span class="tick">✓</span> Bebas ngulang training</span>
+      <span><span class="tick">✓</span> Penginapan gratis luar kota</span>
+    </div>
+  </div>
+</header>
+
+<!-- MARQUEE -->
+<div class="marquee" aria-hidden="true">
+  <div class="track">
+    <span>MIKROTIK</span><span>CISCO</span><span>JUNIPER</span><span>FORTIGATE</span><span>VMWARE</span><span>AWS</span><span>FLUTTER</span><span>CEH</span><span>UBIQUITI</span><span>DEVOPS</span>
+    <span>MIKROTIK</span><span>CISCO</span><span>JUNIPER</span><span>FORTIGATE</span><span>VMWARE</span><span>AWS</span><span>FLUTTER</span><span>CEH</span><span>UBIQUITI</span><span>DEVOPS</span>
+  </div>
+</div>
+
+<!-- KATEGORI -->
+<section class="cats" id="kategori">
+  <div class="wrap">
+    <div class="head reveal">
+      <div class="tag">Bidang Training</div>
+      <h2>Pilih jalur skill kamu</h2>
+      <p>Empat bidang utama dengan puluhan kelas di dalamnya. Semua disusun dari nol sampai siap kerja & lulus sertifikasi internasional.</p>
+    </div>
+    <div class="cat-grid">
+      <div class="cat reveal s1"><div class="ic">🌐</div><h3>IT Network</h3><p>Cisco, Mikrotik, Juniper, Ubiquiti, Fortigate, NMS & Network Programming.</p><span class="arrow">Lihat kelas <span>→</span></span></div>
+      <div class="cat reveal s2"><div class="ic">🛡️</div><h3>Cyber Security</h3><p>Pentest, CEH, CompTIA Security+/Pentest+/CySA+, Web Hacking & Forensic.</p><span class="arrow">Lihat kelas <span>→</span></span></div>
+      <div class="cat reveal s3"><div class="ic">💻</div><h3>Programming & Mobile</h3><p>Android, iOS, Java, Kotlin, Flutter, Web, Laravel, IoT & UI/UX Design.</p><span class="arrow">Lihat kelas <span>→</span></span></div>
+      <div class="cat reveal s4"><div class="ic">☁️</div><h3>Sysadmin & Cloud</h3><p>Linux, Ubuntu, RedHat, VMware, Openstack, AWS, Azure, DevOps & Ansible.</p><span class="arrow">Lihat kelas <span>→</span></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- KATALOG TRAINING (dirender dari data) -->
+<section class="train" id="training">
+  <div class="wrap">
+    <div class="head reveal">
+      <div class="tag">Katalog Kelas</div>
+      <h2>Pilih training & langsung daftar</h2>
+      <p>Klik "Daftar" pada kelas yang kamu mau. Tanpa login — cukup isi data, bayar via QRIS, selesai.</p>
+    </div>
+
+    <div class="filter reveal">
+      <button class="chip active" data-filter="all">Semua</button>
+      <button class="chip" data-filter="network">Network</button>
+      <button class="chip" data-filter="security">Security</button>
+      <button class="chip" data-filter="dev">Programming</button>
+      <button class="chip" data-filter="cloud">Sysadmin & Cloud</button>
+    </div>
+
+    <div class="prod-grid" id="grid">
+      <% trainings.forEach(function (c, i) { %>
+        <div class="card reveal s<%= (i % 4) + 1 %>" data-cat="<%= c.category %>">
+          <div class="thumb" style="background: <%= c.color %>">
+            <span class="badge"><%= c.level %></span>
+            <span class="shine"></span>
+            <%= c.title.split(" ").map(w => w[0]).join("").slice(0,2).toUpperCase() %>
+          </div>
+          <div class="body">
+            <span class="lvl"><%= c.category %> • <%= c.level %></span>
+            <h3><%= c.title %></h3>
+            <p class="desc"><%= c.description %></p>
+            <div class="meta">
+              <span>⏱ <b><%= c.duration %></b></span>
+              <span>🎓 <b><%= c.certificate %></b></span>
+            </div>
+            <div class="foot">
+              <span class="price"><%= rupiah(c.price) %> <small>/ batch</small></span>
+              <a class="go" href="/daftar/<%= c.id %>" data-ripple>Daftar →</a>
+            </div>
+          </div>
+        </div>
+      <% }); %>
+    </div>
+
+    <% if (trainings.length === 0) { %>
+      <p class="empty">Belum ada training. Tambahkan lewat <a href="/admin">panel admin</a>.</p>
+    <% } %>
+  </div>
+</section>
+
+<!-- KENAPA -->
+<section class="why" id="kenapa">
+  <div class="wrap">
+    <div class="head reveal">
+      <div class="tag">Kenapa ID-Networkers</div>
+      <h2>Tempat belajar yang bikin nagih</h2>
+      <p>Bukan cuma teori. Materi berkualitas, harga termurah sekelasnya, dan suasana training yang fun.</p>
+    </div>
+    <div class="why-grid">
+      <div class="feat reveal s1"><div class="ic">🖥️</div><h3>1 Orang 1 Perangkat</h3><p>Lab fisik disediakan satu peserta satu unit, praktek di perangkat asli — bukan simulator.</p></div>
+      <div class="feat reveal s2"><div class="ic">🔁</div><h3>Bebas Ngulang</h3><p>Belum paham? Boleh ikut training yang sama lagi kapan saja tanpa bayar ulang.</p></div>
+      <div class="feat reveal s3"><div class="ic">🏆</div><h3>Sertifikat Internasional</h3><p>IDN penyelenggara resmi ujian sertifikasi vendor seperti MikroTik & Fortinet.</p></div>
+      <div class="feat reveal s1"><div class="ic">🏠</div><h3>Penginapan Gratis</h3><p>Peserta luar kota dapat penginapan gratis selama mengikuti training.</p></div>
+      <div class="feat reveal s2"><div class="ic">🧪</div><h3>Bebas Nge-Lab</h3><p>Akses lab di luar jam training khusus peserta. Eksperimen sampai paham.</p></div>
+      <div class="feat reveal s3"><div class="ic">😄</div><h3>Trainer Fun</h3><p>Penyampaian santai tapi padat, dibimbing praktisi yang turun langsung di industri.</p></div>
+    </div>
+  </div>
+</section>
+
+<%- include("partials/footer") %>

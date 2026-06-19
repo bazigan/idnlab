@@ -1,0 +1,278 @@
+/* ==============================================================
+   ID-NETWORKERS GALAXY — Tema Samsung
+   Satu file CSS untuk semua halaman.
+   ============================================================== */
+
+:root {
+  --ink: #08080c;
+  --snow: #ffffff;
+  --mist: #f3f4f8;
+  --steel: #6b7180;
+  --line: #e6e7ee;
+  --samsung: #1428a0;
+  --galaxy: #1668ff;
+  --cyan: #27c4ff;
+  --grad: linear-gradient(120deg, #1428a0 0%, #3b3ff0 38%, #6b3df5 64%, #27c4ff 100%);
+  --grad-soft: linear-gradient(120deg, #eef1ff 0%, #f3edff 60%, #e8faff 100%);
+  --radius: 22px;
+  --shadow: 0 22px 60px -28px rgba(20, 40, 160, 0.45);
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+body {
+  font-family: "Inter", -apple-system, system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--snow);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+h1, h2, h3, .brand { font-family: "Sora", sans-serif; letter-spacing: -0.02em; line-height: 1.08; }
+a { text-decoration: none; color: inherit; }
+img { max-width: 100%; display: block; }
+.wrap { width: min(1180px, 92vw); margin-inline: auto; }
+.wrap.narrow { width: min(640px, 92vw); }
+.center { text-align: center; }
+.muted { color: var(--steel); }
+
+/* ---------- TOMBOL ---------- */
+.btn {
+  font-family: "Sora"; font-weight: 600; font-size: 0.92rem; cursor: pointer; border: none;
+  padding: 12px 26px; border-radius: 999px; position: relative; overflow: hidden;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease), background 0.3s;
+}
+.btn.full { width: 100%; margin-top: 8px; }
+.btn-dark { background: var(--ink); color: #fff; }
+.btn-dark:hover { transform: translateY(-2px); box-shadow: 0 14px 30px -12px rgba(0, 0, 0, 0.5); }
+.btn-grad { background: var(--grad); color: #fff; box-shadow: 0 14px 34px -14px var(--galaxy); }
+.btn-grad:hover { transform: translateY(-2px); box-shadow: 0 20px 44px -14px var(--galaxy); }
+.btn-ghost { background: transparent; border: 1.5px solid var(--ink); color: var(--ink); }
+.btn-ghost:hover { background: var(--ink); color: #fff; transform: translateY(-2px); }
+
+/* efek ripple saat klik */
+.ripple { position: absolute; border-radius: 50%; transform: scale(0); background: rgba(255, 255, 255, 0.55); pointer-events: none; animation: rip 0.6s var(--ease); }
+.btn-ghost .ripple { background: rgba(20, 40, 160, 0.25); }
+@keyframes rip { to { transform: scale(2.6); opacity: 0; } }
+
+/* ---------- NAV ---------- */
+nav {
+  position: fixed; inset: 0 0 auto 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px clamp(18px, 5vw, 52px);
+  background: rgba(255, 255, 255, 0.82); backdrop-filter: blur(18px);
+  box-shadow: 0 1px 0 var(--line);
+}
+.brand { display: flex; align-items: center; gap: 11px; font-weight: 800; font-size: 1.15rem; }
+.brand .dot { width: 34px; height: 34px; border-radius: 11px; background: var(--grad); display: grid; place-items: center; color: #fff; font-size: 0.82rem; font-weight: 800; }
+.brand b { color: var(--samsung); }
+.navlinks { display: flex; gap: 32px; font-size: 0.93rem; font-weight: 500; }
+.navlinks a { position: relative; color: #2a2c35; transition: color 0.25s; }
+.navlinks a::after { content: ""; position: absolute; left: 0; bottom: -6px; height: 2px; width: 0; background: var(--grad); transition: width 0.3s var(--ease); }
+.navlinks a:hover { color: var(--samsung); }
+.navlinks a:hover::after { width: 100%; }
+
+/* ---------- HERO ---------- */
+.hero { min-height: 92vh; display: flex; flex-direction: column; justify-content: center; padding: 130px 0 80px; background: var(--grad-soft); position: relative; overflow: hidden; }
+.hero::before, .hero::after { content: ""; position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.5; }
+.hero::before { width: 440px; height: 440px; background: radial-gradient(circle, #7d6bff, transparent 70%); top: -120px; right: -80px; animation: float1 12s ease-in-out infinite; }
+.hero::after { width: 380px; height: 380px; background: radial-gradient(circle, #27c4ff, transparent 70%); bottom: -120px; left: -60px; animation: float2 14s ease-in-out infinite; }
+@keyframes float1 { 50% { transform: translate(-30px, 40px); } }
+@keyframes float2 { 50% { transform: translate(28px, -36px); } }
+.hero .wrap { position: relative; z-index: 2; }
+.eyebrow { display: inline-flex; align-items: center; gap: 9px; font-family: "Sora"; font-weight: 600; font-size: 0.8rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--samsung); background: rgba(255, 255, 255, 0.7); border: 1px solid rgba(20, 40, 160, 0.15); padding: 8px 16px; border-radius: 999px; margin-bottom: 26px; }
+.pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--galaxy); box-shadow: 0 0 0 0 rgba(22, 104, 255, 0.6); animation: pulse 2s infinite; }
+@keyframes pulse { 70% { box-shadow: 0 0 0 12px rgba(22, 104, 255, 0); } 100% { box-shadow: 0 0 0 0 rgba(22, 104, 255, 0); } }
+.hero h1 { font-size: clamp(2.6rem, 7vw, 5.4rem); font-weight: 800; max-width: 14ch; }
+.hero h1 .g { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hero .lead { font-size: clamp(1.05rem, 2vw, 1.3rem); color: #3a3d49; max-width: 54ch; margin: 26px 0 38px; }
+.hero-cta { display: flex; gap: 14px; flex-wrap: wrap; }
+.hero-note { margin-top: 22px; font-size: 0.86rem; color: var(--steel); display: flex; gap: 18px; flex-wrap: wrap; }
+.hero-note span { display: inline-flex; align-items: center; gap: 7px; }
+.tick { color: var(--galaxy); font-weight: 700; }
+
+/* ---------- MARQUEE ---------- */
+.marquee { background: var(--ink); color: #fff; padding: 20px 0; overflow: hidden; white-space: nowrap; }
+.marquee .track { display: inline-flex; gap: 52px; animation: scrollx 26s linear infinite; font-family: "Sora"; font-weight: 700; font-size: 1.05rem; opacity: 0.92; }
+.marquee .track span::after { content: " ✦"; color: var(--cyan); }
+@keyframes scrollx { to { transform: translateX(-50%); } }
+
+/* ---------- JUDUL SECTION ---------- */
+.head { max-width: 720px; margin-bottom: 54px; }
+.head .tag { font-family: "Sora"; font-weight: 600; color: var(--galaxy); font-size: 0.85rem; letter-spacing: 0.05em; text-transform: uppercase; }
+.head h2 { font-size: clamp(2rem, 4.6vw, 3.2rem); font-weight: 800; margin-top: 14px; }
+.head p { color: var(--steel); font-size: 1.08rem; margin-top: 16px; }
+
+/* ---------- KATEGORI ---------- */
+.cats { padding: 90px 0; }
+.cat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
+.cat { position: relative; padding: 30px 26px 34px; border-radius: var(--radius); background: var(--snow); border: 1px solid var(--line); overflow: hidden; transition: transform 0.4s var(--ease), box-shadow 0.4s var(--ease), border-color 0.4s; }
+.cat::before { content: ""; position: absolute; inset: 0; background: var(--grad); opacity: 0; transition: opacity 0.4s var(--ease); }
+.cat > * { position: relative; z-index: 1; transition: color 0.4s; }
+.cat:hover { transform: translateY(-10px); box-shadow: var(--shadow); border-color: transparent; }
+.cat:hover::before { opacity: 1; }
+.cat:hover h3, .cat:hover p, .cat:hover .ic, .cat:hover .arrow { color: #fff; }
+.cat .ic { width: 54px; height: 54px; border-radius: 15px; background: var(--grad-soft); display: grid; place-items: center; font-size: 1.6rem; margin-bottom: 20px; transition: background 0.4s; }
+.cat:hover .ic { background: rgba(255, 255, 255, 0.18); }
+.cat h3 { font-size: 1.25rem; font-weight: 700; }
+.cat p { color: var(--steel); font-size: 0.92rem; margin-top: 10px; min-height: 66px; }
+.cat .arrow { font-family: "Sora"; font-weight: 600; font-size: 0.9rem; color: var(--samsung); display: inline-flex; gap: 6px; align-items: center; }
+.cat .arrow span { transition: transform 0.3s var(--ease); }
+.cat:hover .arrow span { transform: translateX(5px); }
+
+/* ---------- KATALOG / KARTU TRAINING ---------- */
+.train { padding: 30px 0 100px; }
+.filter { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 38px; }
+.chip { font-family: "Sora"; font-weight: 600; font-size: 0.86rem; cursor: pointer; padding: 9px 20px; border-radius: 999px; border: 1.5px solid var(--line); background: #fff; color: #3a3d49; transition: all 0.28s var(--ease); }
+.chip:hover { border-color: var(--galaxy); color: var(--galaxy); }
+.chip.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+.prod-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.card { border-radius: var(--radius); background: var(--snow); border: 1px solid var(--line); overflow: hidden; transition: transform 0.45s var(--ease), box-shadow 0.45s var(--ease); display: flex; flex-direction: column; }
+.card:hover { transform: translateY(-12px); box-shadow: var(--shadow); }
+.card .thumb { height: 170px; position: relative; overflow: hidden; display: grid; place-items: center; color: #fff; font-family: "Sora"; font-weight: 800; font-size: 1.6rem; }
+.card .badge { position: absolute; top: 14px; left: 14px; background: rgba(255, 255, 255, 0.92); color: var(--ink); font-family: "Inter"; font-weight: 600; font-size: 0.72rem; padding: 5px 12px; border-radius: 999px; }
+.card .shine { position: absolute; inset: 0; background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.35) 50%, transparent 65%); transform: translateX(-130%); transition: transform 0.7s var(--ease); }
+.card:hover .shine { transform: translateX(130%); }
+.card .body { padding: 22px 22px 24px; display: flex; flex-direction: column; flex: 1; }
+.card .lvl { font-size: 0.76rem; font-weight: 600; color: var(--galaxy); text-transform: uppercase; letter-spacing: 0.04em; }
+.card h3 { font-size: 1.18rem; font-weight: 700; margin: 8px 0 10px; }
+.card .desc { color: var(--steel); font-size: 0.9rem; flex: 1; }
+.card .meta { display: flex; gap: 16px; margin: 16px 0; font-size: 0.82rem; color: var(--steel); }
+.card .meta b { color: var(--ink); font-weight: 600; }
+.card .foot { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--line); padding-top: 16px; }
+.card .price { font-family: "Sora"; font-weight: 800; font-size: 1.1rem; }
+.card .price small { font-weight: 500; font-size: 0.72rem; color: var(--steel); }
+.card .go { font-family: "Sora"; font-weight: 600; font-size: 0.82rem; cursor: pointer; border: none; background: var(--mist); color: var(--ink); padding: 9px 18px; border-radius: 999px; position: relative; overflow: hidden; transition: background 0.3s, color 0.3s, transform 0.25s; }
+.card .go:hover { background: var(--grad); color: #fff; transform: translateX(3px); }
+.empty { text-align: center; color: var(--steel); padding: 40px; }
+.empty a { color: var(--samsung); font-weight: 600; }
+
+/* ---------- KENAPA (dark) ---------- */
+.why { background: var(--ink); color: #fff; padding: 100px 0; overflow: hidden; position: relative; }
+.why::before { content: ""; position: absolute; width: 600px; height: 600px; border-radius: 50%; background: radial-gradient(circle, rgba(107, 61, 245, 0.4), transparent 65%); top: -200px; right: -150px; filter: blur(40px); }
+.why .head h2 { color: #fff; }
+.why .head p { color: #aeb2c2; }
+.why .head .tag { color: var(--cyan); }
+.why-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; position: relative; z-index: 1; }
+.feat { padding: 30px; border-radius: var(--radius); background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); transition: transform 0.4s var(--ease), background 0.4s; }
+.feat:hover { transform: translateY(-8px); background: rgba(255, 255, 255, 0.09); }
+.feat .ic { width: 50px; height: 50px; border-radius: 14px; background: var(--grad); display: grid; place-items: center; font-size: 1.4rem; margin-bottom: 18px; }
+.feat h3 { font-size: 1.18rem; font-weight: 700; }
+.feat p { color: #aeb2c2; font-size: 0.92rem; margin-top: 10px; }
+
+/* ---------- FOOTER ---------- */
+footer { background: var(--mist); padding: 70px 0 36px; font-size: 0.9rem; }
+.foot-top { display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 50px; }
+.foot-top h4 { font-family: "Sora"; font-weight: 700; font-size: 0.95rem; margin-bottom: 18px; }
+.foot-top a { display: block; color: var(--steel); margin-bottom: 10px; transition: color 0.25s, transform 0.25s; }
+.foot-top a:hover { color: var(--samsung); transform: translateX(4px); }
+.foot-top .about p { color: var(--steel); margin-top: 14px; max-width: 38ch; }
+.foot-top .about .brand { margin-bottom: 4px; }
+.foot-bar { border-top: 1px solid var(--line); padding-top: 24px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; color: var(--steel); }
+
+/* ---------- HALAMAN FORM (daftar / bayar / selesai) ---------- */
+.page { padding: 120px 0 80px; min-height: 80vh; background: var(--grad-soft); }
+.back { display: inline-block; color: var(--samsung); font-weight: 600; margin-bottom: 18px; }
+.steps { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+.step { font-family: "Sora"; font-size: 0.82rem; font-weight: 600; color: var(--steel); background: #fff; border: 1px solid var(--line); padding: 7px 16px; border-radius: 999px; }
+.step.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+.step.done { background: #e8f6ee; color: #1b8a4b; border-color: #bfe6cd; }
+.panel { background: #fff; border-radius: 26px; overflow: hidden; box-shadow: var(--shadow); border: 1px solid var(--line); }
+.panel-head { padding: 34px 32px; color: #fff; }
+.panel-head .badge { display: inline-block; background: rgba(255, 255, 255, 0.9); color: var(--ink); font-size: 0.72rem; font-weight: 600; padding: 5px 12px; border-radius: 999px; margin-bottom: 12px; }
+.panel-head h1 { font-size: 1.7rem; font-weight: 800; }
+.panel-head p { opacity: 0.92; margin-top: 8px; font-size: 0.95rem; }
+.panel-price { font-family: "Sora"; font-weight: 800; font-size: 1.6rem; margin-top: 16px; }
+.panel-price small { font-weight: 500; font-size: 0.8rem; opacity: 0.85; }
+.panel-body { padding: 30px 32px 34px; display: flex; flex-direction: column; gap: 16px; }
+.panel-body.center { align-items: center; text-align: center; }
+label { font-family: "Sora"; font-weight: 600; font-size: 0.88rem; display: flex; flex-direction: column; gap: 7px; width: 100%; }
+input, select, textarea { font-family: "Inter"; font-size: 0.95rem; padding: 13px 15px; border: 1.5px solid var(--line); border-radius: 13px; background: #fafbff; transition: border-color 0.25s, box-shadow 0.25s; width: 100%; }
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--galaxy); box-shadow: 0 0 0 4px rgba(22, 104, 255, 0.12); }
+.note { font-size: 0.8rem; color: var(--steel); text-align: center; }
+.alert { background: #fde8e8; color: #b42318; border: 1px solid #f5c2c0; padding: 12px 16px; border-radius: 12px; font-size: 0.9rem; }
+
+/* ---------- QRIS ---------- */
+.qr-hint { color: var(--steel); font-size: 0.92rem; max-width: 42ch; }
+.qr-box { background: #fff; border: 2px dashed var(--line); border-radius: 20px; padding: 18px; display: inline-flex; flex-direction: column; align-items: center; gap: 10px; }
+.qr-box img { width: 240px; height: 240px; }
+.qr-label { font-size: 0.78rem; color: var(--steel); font-weight: 600; }
+.upload { width: 100%; display: flex; flex-direction: column; gap: 14px; margin-top: 8px; }
+.file-label { background: #fafbff; border: 1.5px dashed var(--line); border-radius: 14px; padding: 18px; cursor: pointer; }
+
+/* ---------- HALAMAN SUKSES ---------- */
+.check { width: 76px; height: 76px; border-radius: 50%; background: var(--grad); color: #fff; font-size: 2.2rem; display: grid; place-items: center; box-shadow: 0 14px 34px -14px var(--galaxy); animation: pop 0.5s var(--ease); }
+@keyframes pop { 0% { transform: scale(0); } 70% { transform: scale(1.12); } 100% { transform: scale(1); } }
+.success-text { color: var(--steel); max-width: 46ch; }
+.summary { width: 100%; background: var(--mist); border-radius: 16px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; }
+.summary div { display: flex; justify-content: space-between; font-size: 0.92rem; }
+.summary span { color: var(--steel); }
+
+/* ---------- ADMIN ---------- */
+.admin { background: var(--mist); }
+.admin-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; flex-wrap: wrap; gap: 16px; }
+.admin-top h1 { font-size: 2rem; font-weight: 800; }
+.admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+.card-flat { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 26px; }
+.card-flat h2 { font-size: 1.25rem; font-weight: 700; margin-bottom: 18px; }
+.admin-form { display: flex; flex-direction: column; gap: 14px; }
+.admin-form .row { display: flex; gap: 14px; }
+.list { display: flex; flex-direction: column; gap: 10px; }
+.list-item { display: flex; align-items: center; gap: 14px; padding: 12px; border: 1px solid var(--line); border-radius: 14px; }
+.swatch { width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0; }
+.list-info { flex: 1; }
+.list-info b { display: block; font-size: 0.95rem; }
+.list-info small { color: var(--steel); }
+.list-act { display: flex; gap: 8px; align-items: center; }
+.mini { font-family: "Sora"; font-weight: 600; font-size: 0.78rem; padding: 7px 14px; border-radius: 999px; border: 1.5px solid var(--line); background: #fff; color: var(--ink); cursor: pointer; position: relative; overflow: hidden; transition: all 0.25s; }
+.mini:hover { border-color: var(--galaxy); color: var(--galaxy); }
+.mini.danger:hover { border-color: #e5484d; color: #e5484d; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+th { font-family: "Sora"; font-weight: 600; color: var(--steel); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.03em; }
+td small { color: var(--steel); }
+.status { background: #fff4e0; color: #a86400; font-size: 0.76rem; font-weight: 600; padding: 4px 10px; border-radius: 999px; }
+
+/* ---------- PROGRESS BAR & TO TOP ---------- */
+.progress { position: fixed; top: 0; left: 0; height: 3px; width: 0; background: var(--grad); z-index: 200; transition: width 0.1s; }
+.totop { position: fixed; right: 22px; bottom: 22px; width: 48px; height: 48px; border-radius: 50%; background: var(--ink); color: #fff; border: none; cursor: pointer; font-size: 1.2rem; opacity: 0; transform: translateY(20px) scale(0.8); transition: all 0.35s var(--ease); z-index: 90; }
+.totop.show { opacity: 1; transform: none; }
+.totop:hover { background: var(--grad); transform: translateY(-3px); }
+
+/* ==============================================================
+   SCROLL REVEAL — PENTING:
+   Konten TAMPIL secara default. Animasi sembunyi-muncul hanya
+   aktif kalau JavaScript jalan (class .js-anim ditambah oleh JS).
+   Jadi kalau JS gagal/diblokir, konten tetap kelihatan.
+   ============================================================== */
+.reveal { opacity: 1; transform: none; transition: opacity 0.8s var(--ease), transform 0.8s var(--ease); }
+html.js-anim .reveal:not(.in) { opacity: 0; transform: translateY(38px); }
+.reveal.s1 { transition-delay: 0.08s; }
+.reveal.s2 { transition-delay: 0.16s; }
+.reveal.s3 { transition-delay: 0.24s; }
+.reveal.s4 { transition-delay: 0.32s; }
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 960px) {
+  .navlinks { display: none; }
+  .cat-grid { grid-template-columns: repeat(2, 1fr); }
+  .prod-grid, .why-grid { grid-template-columns: repeat(2, 1fr); }
+  .foot-top { grid-template-columns: 1fr 1fr; }
+  .admin-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 620px) {
+  .cat-grid, .prod-grid, .why-grid { grid-template-columns: 1fr; }
+  .foot-top { grid-template-columns: 1fr; }
+  .hero-cta { flex-direction: column; }
+  .hero-cta .btn { width: 100%; }
+  .admin-form .row { flex-direction: column; }
+}
+
+/* Hormati pengguna yang mematikan animasi */
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+  html.js-anim .reveal:not(.in) { opacity: 1; transform: none; }
+}

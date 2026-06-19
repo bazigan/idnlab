@@ -1,0 +1,47 @@
+<%- include("partials/head", { pageTitle: "Daftar — " + training.title }) %>
+<%- include("partials/nav") %>
+
+<main class="page">
+  <div class="wrap narrow">
+    <a href="/#training" class="back">← Kembali ke katalog</a>
+
+    <div class="steps">
+      <span class="step active">1. Isi Data</span>
+      <span class="step">2. Bayar</span>
+      <span class="step">3. Selesai</span>
+    </div>
+
+    <div class="panel reveal in">
+      <div class="panel-head" style="background: <%= training.color %>">
+        <span class="badge"><%= training.level %></span>
+        <h1><%= training.title %></h1>
+        <p><%= training.description %></p>
+        <div class="panel-price"><%= rupiah(training.price) %> <small>/ batch</small></div>
+      </div>
+
+      <form class="panel-body" method="POST" action="/daftar/<%= training.id %>">
+        <% if (error) { %>
+          <div class="alert"><%= error %></div>
+        <% } %>
+
+        <label>Nama Lengkap *
+          <input type="text" name="name" value="<%= form.name || '' %>" placeholder="Nama sesuai identitas" required />
+        </label>
+        <label>Email *
+          <input type="email" name="email" value="<%= form.email || '' %>" placeholder="email@contoh.com" required />
+        </label>
+        <label>Nomor HP / WhatsApp *
+          <input type="text" name="phone" value="<%= form.phone || '' %>" placeholder="08xxxxxxxxxx" required />
+        </label>
+        <label>Instansi / Perusahaan
+          <input type="text" name="company" value="<%= form.company || '' %>" placeholder="Opsional" />
+        </label>
+
+        <button type="submit" class="btn btn-grad full" data-ripple>Lanjut ke Pembayaran →</button>
+        <p class="note">Tanpa login. Data kamu hanya dipakai untuk proses pendaftaran.</p>
+      </form>
+    </div>
+  </div>
+</main>
+
+<%- include("partials/footer") %>

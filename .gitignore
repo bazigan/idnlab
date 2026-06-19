@@ -1,0 +1,13 @@
+# Dependency yang di-install npm (tidak perlu di-push)
+node_modules/
+
+# File rahasia berisi password & konfigurasi
+.env
+
+# Bukti pembayaran yang diupload pengguna
+public/uploads/*
+!public/uploads/.gitkeep
+
+# Log & file sementara
+npm-debug.log*
+.DS_Store

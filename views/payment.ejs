@@ -1,0 +1,37 @@
+<%- include("partials/head", { pageTitle: "Pembayaran — " + reg.trainingTitle }) %>
+<%- include("partials/nav") %>
+
+<main class="page">
+  <div class="wrap narrow">
+    <div class="steps">
+      <span class="step done">1. Isi Data</span>
+      <span class="step active">2. Bayar</span>
+      <span class="step">3. Selesai</span>
+    </div>
+
+    <div class="panel reveal in">
+      <div class="panel-head" style="background: linear-gradient(135deg,#1428a0,#6b3df5,#27c4ff)">
+        <h1>Pembayaran QRIS</h1>
+        <p><%= reg.trainingTitle %> — kode <b><%= reg.id %></b></p>
+        <div class="panel-price"><%= rupiah(reg.amount) %></div>
+      </div>
+
+      <div class="panel-body center">
+        <p class="qr-hint">Scan QR di bawah ini pakai aplikasi e-wallet / m-banking (GoPay, OVO, DANA, BCA, dll).</p>
+        <div class="qr-box">
+          <img src="<%= qrImage %>" alt="QRIS Pembayaran" />
+          <span class="qr-label">QRIS • Semua aplikasi pembayaran</span>
+        </div>
+
+        <form class="upload" method="POST" action="/bayar/<%= reg.id %>" enctype="multipart/form-data">
+          <label class="file-label">Upload bukti pembayaran
+            <input type="file" name="proof" accept="image/*" required />
+          </label>
+          <button type="submit" class="btn btn-grad full" data-ripple>Kirim Bukti & Selesai</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</main>
+
+<%- include("partials/footer") %>
