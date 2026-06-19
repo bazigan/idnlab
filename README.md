@@ -16,6 +16,13 @@ Website training bertema **Samsung Galaxy**: katalog dinamis, panel admin, dan p
 ## Cara menjalankan
 
 Pastikan sudah ada **Node.js versi 18 atau lebih baru**.
+# 0. Install nodejs
+```bash
+sudo apt-get install -y curl
+curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
+sudo apt-get install -y nodejs
+node -v
+```
 
 ```bash
 # 1. Install dependency
