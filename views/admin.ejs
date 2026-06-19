@@ -108,7 +108,7 @@
                 <td><%= r.email %><br /><small><%= r.phone %></small></td>
                 <td><%= rupiah(r.amount) %></td>
                 <td><span class="status"><%= r.status %></span></td>
-                <td><% if (r.proofFile) { %><a href="<%= r.proofFile %>" target="_blank">Lihat</a><% } else { %>-<% } %></td>
+                <td><% if (r.proofFile) { %><a href="/admin/bukti/<%= r.id %>" target="_blank">Lihat</a><% } else { %>-<% } %></td>
               </tr>
             <% }); %>
             <% if (registrations.length === 0) { %>

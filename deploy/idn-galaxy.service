@@ -1,0 +1,42 @@
+# ==============================================================
+#  systemd service untuk ID-Networkers Galaxy
+#  Salin ke: /etc/systemd/system/idn-galaxy.service
+#  Lalu:     sudo systemctl daemon-reload
+#            sudo systemctl enable idn-galaxy   <-- agar jalan saat boot
+#            sudo systemctl start idn-galaxy
+#
+#  "enable" inilah kunci auto-start: setiap instance yang lahir
+#  dari AMI (termasuk dari Auto Scaling) akan menjalankan app
+#  ini otomatis ketika booting.
+# ==============================================================
+
+[Unit]
+Description=ID-Networkers Galaxy (Node.js app)
+After=network.target
+
+[Service]
+Type=simple
+
+# Ganti "ubuntu" sesuai user di OS-mu:
+#   - Ubuntu        -> ubuntu
+#   - Amazon Linux  -> ec2-user
+User=ubuntu
+
+# Lokasi project di server. dotenv akan membaca .env dari sini.
+WorkingDirectory=/opt/idn-galaxy
+
+# Jalankan app. Cek path node dengan: which node
+ExecStart=/usr/bin/node server.js
+
+# Kalau app crash, systemd otomatis menjalankan ulang.
+Restart=always
+RestartSec=5
+
+Environment=NODE_ENV=production
+
+# Catat log ke journald (lihat dengan: journalctl -u idn-galaxy -f)
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

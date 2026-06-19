@@ -1,21 +1,26 @@
 # ID-Networkers Galaxy
 
-Website training bertema **Samsung Galaxy**: katalog dinamis, panel admin, dan pendaftaran + pembayaran QRIS. Dibuat dengan **Node.js (Express)** dan penyimpanan data berbasis file JSON, jadi tidak perlu setup database.
+Website training bertema **Samsung Galaxy**: katalog dinamis, panel admin, dan pendaftaran + pembayaran QRIS. Dibuat dengan **Node.js (Express)**.
+
+- **Data** (katalog & pendaftaran) disimpan di **MariaDB / MySQL** (RDS).
+- **Foto bukti pembayaran** diunggah ke **Amazon S3**, dan tetap bisa dilihat langsung dari panel admin lewat link sementara — tanpa buka konsol S3.
+- Semua diatur lewat **.env**: tinggal isi endpoint RDS dan nama bucket S3.
 
 ---
 
 ## Fitur
 
-- **Katalog training** yang tampil dari data, lengkap dengan filter kategori.
-- **Pendaftaran tanpa login**: peserta isi data → bayar via QRIS → upload bukti → selesai.
-- **Konfirmasi otomatis** dikirim ke email peserta & admin, plus tombol kirim bukti ke **WhatsApp** admin.
-- **Panel admin** (`/admin`) untuk **tambah, edit, hapus** training dan melihat daftar pendaftar.
+- **Katalog training** dinamis dengan filter kategori.
+- **Pendaftaran tanpa login**: isi data -> bayar via QRIS -> upload bukti -> selesai.
+- **Konfirmasi otomatis** ke email peserta & admin, plus tombol kirim bukti ke **WhatsApp** admin.
+- **Panel admin** (`/admin`): tambah, edit, hapus training, dan lihat pendaftar + bukti bayar.
 
 ---
 
 ## Cara menjalankan
 
-Pastikan sudah ada **Node.js versi 18 atau lebih baru**.
+Butuh **Node.js 18+** dan satu database **MariaDB/MySQL** (lokal atau RDS).
+
 # 0. Install nodejs
 ```bash
 sudo apt-get install -y curl
@@ -28,34 +33,32 @@ node -v
 # 1. Install dependency
 npm install
 
-# 2. Siapkan konfigurasi (salin lalu edit)
+# 2. Siapkan konfigurasi, lalu isi DB_* (dan S3_BUCKET kalau pakai S3)
 cp .env.example .env
 
-# 3. Jalankan
+# 3. Jalankan (tabel & katalog awal dibuat otomatis saat pertama jalan)
 npm start
 ```
 
-Buka di browser:
-
-- Website: **http://localhost:3000**
-- Panel admin: **http://localhost:3000/admin** (password default: `admin123`)
-
-> Mode pengembangan dengan auto-reload: `npm run dev`
+Buka **http://localhost:3000** — admin di **/admin** (password default `admin123`).
 
 ---
 
 ## Konfigurasi (.env)
 
-Semua opsional kecuali kalau ingin fitur tertentu aktif:
-
 | Variabel | Fungsi |
 |---|---|
 | `PORT` | Port server (default 3000) |
-| `ADMIN_PASSWORD` | Password masuk panel admin |
+| `ADMIN_PASSWORD` | Password panel admin |
 | `SESSION_SECRET` | Teks acak untuk keamanan session |
 | `ADMIN_PHONE` | Nomor WhatsApp admin, format `628xxx` |
-| `QRIS_PAYLOAD` | Teks QRIS merchant kamu (kalau kosong, QR berisi ringkasan pesanan) |
-| `SMTP_*`, `MAIL_FROM`, `ADMIN_EMAIL` | Pengaturan email. Kalau kosong, isi email cukup dicetak di terminal |
+| `QRIS_PAYLOAD` | Payload QRIS merchant (kosong = QR berisi ringkasan) |
+| `DB_HOST` `DB_PORT` `DB_USER` `DB_PASSWORD` `DB_NAME` | Koneksi ke MariaDB/RDS |
+| `S3_BUCKET` | Nama bucket S3 untuk bukti. **Kosong = simpan lokal** |
+| `AWS_REGION` | Region S3 (mis. `ap-southeast-1`) |
+| `SMTP_*`, `MAIL_FROM`, `ADMIN_EMAIL` | Email konfirmasi. Kosong = dicetak di terminal |
+
+> Di EC2, kredensial AWS untuk S3 diambil otomatis dari **IAM Role** instance, jadi di `.env` cukup isi nama bucket.
 
 ---
 
@@ -63,13 +66,12 @@ Semua opsional kecuali kalau ingin fitur tertentu aktif:
 
 ```
 idn-galaxy/
-├── server.js              # File utama: semua route ada di sini
+├── server.js              # File utama: semua route
 ├── lib/
-│   ├── db.js              # Baca/tulis data ke file JSON
+│   ├── db.js              # Koneksi & query MariaDB (buat tabel + seed otomatis)
+│   ├── seed.js            # Katalog awal (dipakai saat tabel kosong)
+│   ├── storage.js         # Upload bukti ke S3 / lokal + link lihat langsung
 │   └── mailer.js          # Kirim email (aman walau belum dikonfigurasi)
-├── data/
-│   ├── trainings.json     # Katalog training
-│   └── registrations.json # Data pendaftar (terisi otomatis)
 ├── views/                 # Template halaman (EJS)
 │   ├── partials/          # Potongan dipakai berulang (nav, footer, head)
 │   ├── index.ejs          # Beranda + katalog
@@ -78,19 +80,17 @@ idn-galaxy/
 │   ├── success.ejs        # Halaman selesai
 │   ├── admin-login.ejs    # Login admin
 │   ├── admin.ejs          # Dashboard admin
-│   └── 404.ejs            # Halaman tidak ditemukan
-└── public/                # File statis (CSS, JS, gambar, upload)
-    ├── css/style.css
-    ├── js/main.js
-    └── uploads/           # Bukti pembayaran tersimpan di sini
+│   └── 404.ejs
+├── public/                # CSS, JS, gambar (+ uploads/ untuk fallback lokal)
+└── deploy/                # File untuk deploy ke AWS (lihat DEPLOY-AWS.md)
 ```
 
 ---
 
 ## Catatan
 
-- **QRIS**: untuk transaksi sungguhan, isi `QRIS_PAYLOAD` dengan payload QRIS resmi dari penyedia pembayaran merchant kamu.
-- **Harga training** pada data contoh bukan harga resmi — sesuaikan lewat panel admin.
-- Data tersimpan di file JSON, cocok untuk skala kecil. Untuk skala besar, ganti `lib/db.js` dengan database seperti SQLite/PostgreSQL tanpa mengubah bagian lain.
+- **Database**: tabel `trainings` dan `registrations` dibuat otomatis. Katalog awal hanya di-seed kalau tabel masih kosong.
+- **S3**: bucket boleh tetap *private*. App membuat *presigned URL* (berlaku 5 menit) saat admin klik "Lihat".
+- **QRIS**: untuk transaksi sungguhan, isi `QRIS_PAYLOAD` dengan payload resmi dari penyedia pembayaran merchant.
 
 MIT License.

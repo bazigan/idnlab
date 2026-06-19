@@ -1,21 +1,24 @@
 {
   "name": "idn-galaxy",
-  "version": "1.0.0",
-  "description": "Website training ID-Networkers bertema Samsung Galaxy. Katalog dinamis, panel admin, dan pendaftaran + pembayaran QRIS.",
+  "version": "2.0.0",
+  "description": "Website training ID-Networkers bertema Samsung Galaxy. Katalog dinamis (MariaDB), panel admin, pendaftaran + QRIS, bukti upload ke S3.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js"
   },
-  "keywords": ["training", "katalog", "qris", "express"],
+  "keywords": ["training", "katalog", "qris", "express", "mariadb", "s3"],
   "author": "ID-Networkers",
   "license": "MIT",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.620.0",
+    "@aws-sdk/s3-request-presigner": "^3.620.0",
     "dotenv": "^16.4.5",
     "ejs": "^3.1.10",
     "express": "^4.19.2",
     "express-session": "^1.18.0",
     "multer": "^2.0.1",
+    "mysql2": "^3.11.0",
     "nodemailer": "^6.9.13",
     "qrcode": "^1.5.3"
   }

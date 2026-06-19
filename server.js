@@ -5,15 +5,13 @@
  *  Website training: katalog dinamis, panel admin, pendaftaran,
  *  dan pembayaran QRIS — tanpa perlu login bagi peserta.
  *
- *  Alur peserta:
- *   1. Buka katalog  ->  2. Klik "Daftar"  ->  3. Isi form
- *   4. Bayar via QRIS ->  5. Upload bukti  ->  6. Selesai
- *      (konfirmasi dikirim ke email peserta + admin, dan bukti
- *       bisa dikirim ke WhatsApp admin lewat tombol)
+ *  Penyimpanan:
+ *   - Data (katalog & pendaftaran) -> database MariaDB/RDS (lib/db.js)
+ *   - Foto bukti pembayaran        -> Amazon S3 (lib/storage.js)
  *
- *  Alur admin (/admin):
- *   - Tambah, edit, hapus training di katalog
- *   - Lihat daftar pendaftar
+ *  Alur peserta:
+ *   1. Buka katalog -> 2. Klik "Daftar" -> 3. Isi form
+ *   4. Bayar QRIS   -> 5. Upload bukti  -> 6. Selesai
  * ==============================================================
  */
 
@@ -26,6 +24,7 @@ const path = require("path");
 const QRCode = require("qrcode");
 
 const db = require("./lib/db");
+const storage = require("./lib/storage");
 const { kirimEmail } = require("./lib/mailer");
 
 const app = express();
@@ -35,17 +34,11 @@ const PORT = process.env.PORT || 3000;
 //  PENGATURAN DASAR
 // ---------------------------------------------------------------
 
-// Gunakan EJS sebagai mesin template (file .ejs di folder /views)
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
-
-// Sajikan file statis (CSS, JS, gambar, bukti upload) dari /public
 app.use(express.static(path.join(__dirname, "public")));
-
-// Agar bisa membaca data dari form HTML (req.body)
 app.use(express.urlencoded({ extended: true }));
 
-// Session untuk menandai admin yang sudah login
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "rahasia-default",
@@ -54,23 +47,13 @@ app.use(
   })
 );
 
-// Pengaturan upload bukti pembayaran -> disimpan di /public/uploads
-const upload = multer({
-  storage: multer.diskStorage({
-    destination: path.join(__dirname, "public", "uploads"),
-    filename: (req, file, cb) => {
-      // Nama file dibuat unik: bukti-<waktu>.<ekstensi asli>
-      const ext = path.extname(file.originalname);
-      cb(null, "bukti-" + Date.now() + ext);
-    },
-  }),
-});
+// Upload disimpan dulu di memori, lalu diteruskan ke S3 oleh storage.js
+const upload = multer({ storage: multer.memoryStorage() });
 
-// Fungsi bantu: format angka jadi Rupiah, mis. 2500000 -> "Rp2.500.000"
+// Format angka jadi Rupiah, mis. 2500000 -> "Rp2.500.000"
 function rupiah(angka) {
   return "Rp" + Number(angka).toLocaleString("id-ID");
 }
-// Buat fungsi rupiah() bisa dipakai langsung di semua template EJS
 app.locals.rupiah = rupiah;
 
 // ---------------------------------------------------------------
@@ -78,25 +61,23 @@ app.locals.rupiah = rupiah;
 // ---------------------------------------------------------------
 
 // Beranda + katalog training
-app.get("/", (req, res) => {
-  res.render("index", { trainings: db.getTrainings() });
+app.get("/", async (req, res) => {
+  res.render("index", { trainings: await db.getTrainings() });
 });
 
-// Form pendaftaran untuk satu training tertentu
-app.get("/daftar/:id", (req, res) => {
-  const training = db.getTrainingById(req.params.id);
+// Form pendaftaran untuk satu training
+app.get("/daftar/:id", async (req, res) => {
+  const training = await db.getTrainingById(req.params.id);
   if (!training) return res.status(404).render("404");
   res.render("register", { training, error: null, form: {} });
 });
 
-// Proses form pendaftaran -> simpan -> lanjut ke halaman pembayaran
-app.post("/daftar/:id", (req, res) => {
-  const training = db.getTrainingById(req.params.id);
+// Proses form pendaftaran -> simpan -> lanjut ke pembayaran
+app.post("/daftar/:id", async (req, res) => {
+  const training = await db.getTrainingById(req.params.id);
   if (!training) return res.status(404).render("404");
 
   const { name, email, phone, company } = req.body;
-
-  // Validasi sederhana: nama, email, dan no HP wajib diisi
   if (!name || !email || !phone) {
     return res.render("register", {
       training,
@@ -105,8 +86,6 @@ app.post("/daftar/:id", (req, res) => {
     });
   }
 
-  // Buat data pendaftaran baru
-  const registrations = db.getRegistrations();
   const pendaftaran = {
     id: "REG-" + Date.now(),
     trainingId: training.id,
@@ -118,26 +97,20 @@ app.post("/daftar/:id", (req, res) => {
     amount: training.price,
     status: "menunggu pembayaran",
     proofFile: null,
-    createdAt: new Date().toISOString(),
   };
-  registrations.push(pendaftaran);
-  db.saveRegistrations(registrations);
+  await db.addRegistration(pendaftaran);
 
-  // Arahkan ke halaman pembayaran QRIS
   res.redirect("/bayar/" + pendaftaran.id);
 });
 
 // Halaman pembayaran QRIS + upload bukti
 app.get("/bayar/:id", async (req, res) => {
-  const reg = db.getRegistrationById(req.params.id);
+  const reg = await db.getRegistrationById(req.params.id);
   if (!reg) return res.status(404).render("404");
 
-  // Isi QR: pakai payload QRIS merchant jika ada, kalau tidak pakai ringkasan
   const isiQr =
     process.env.QRIS_PAYLOAD ||
     `Pembayaran ${reg.trainingTitle} - ${reg.id} - ${rupiah(reg.amount)}`;
-
-  // Ubah teks di atas menjadi gambar QR (format data URL agar langsung tampil)
   const qrImage = await QRCode.toDataURL(isiQr, { width: 280, margin: 1 });
 
   res.render("payment", { reg, qrImage });
@@ -145,16 +118,15 @@ app.get("/bayar/:id", async (req, res) => {
 
 // Proses upload bukti pembayaran
 app.post("/bayar/:id", upload.single("proof"), async (req, res) => {
-  const registrations = db.getRegistrations();
-  const reg = registrations.find((r) => r.id === req.params.id);
+  const reg = await db.getRegistrationById(req.params.id);
   if (!reg) return res.status(404).render("404");
 
-  // Catat nama file bukti dan ubah status
-  reg.proofFile = req.file ? "/uploads/" + req.file.filename : null;
-  reg.status = "menunggu verifikasi";
-  db.saveRegistrations(registrations);
+  // Simpan bukti (ke S3 atau lokal) lalu catat referensinya di database
+  let referensi = null;
+  if (req.file) referensi = await storage.simpanBukti(req.file);
+  await db.updateRegistrationProof(reg.id, referensi, "menunggu verifikasi");
 
-  // Kirim email konfirmasi ke peserta dan ke admin
+  // Kirim email konfirmasi ke peserta dan admin
   const ringkasan = `
     <h2>Pendaftaran ${reg.trainingTitle}</h2>
     <p>Halo ${reg.name}, terima kasih sudah mendaftar.</p>
@@ -165,7 +137,7 @@ app.post("/bayar/:id", upload.single("proof"), async (req, res) => {
       <li>Email: ${reg.email}</li>
       <li>No HP: ${reg.phone}</li>
     </ul>
-    <p>Bukti pembayaran kamu sedang kami verifikasi. Tim kami akan menghubungi kamu segera.</p>`;
+    <p>Bukti pembayaranmu sedang kami verifikasi. Tim kami akan menghubungi kamu segera.</p>`;
 
   try {
     await kirimEmail({
@@ -187,12 +159,11 @@ app.post("/bayar/:id", upload.single("proof"), async (req, res) => {
   res.redirect("/selesai/" + reg.id);
 });
 
-// Halaman selesai: tampilkan tombol kirim bukti ke WhatsApp admin
-app.get("/selesai/:id", (req, res) => {
-  const reg = db.getRegistrationById(req.params.id);
+// Halaman selesai + tombol kirim bukti ke WhatsApp admin
+app.get("/selesai/:id", async (req, res) => {
+  const reg = await db.getRegistrationById(req.params.id);
   if (!reg) return res.status(404).render("404");
 
-  // Siapkan link WhatsApp ke admin dengan pesan otomatis
   const pesan = encodeURIComponent(
     `Halo admin, saya sudah daftar & bayar.\n` +
       `Kode: ${reg.id}\nNama: ${reg.name}\nTraining: ${reg.trainingTitle}\n` +
@@ -207,18 +178,15 @@ app.get("/selesai/:id", (req, res) => {
 //  HALAMAN ADMIN (dilindungi password sederhana)
 // ---------------------------------------------------------------
 
-// "Penjaga pintu": memastikan admin sudah login sebelum masuk
 function wajibLogin(req, res, next) {
   if (req.session.isAdmin) return next();
   res.redirect("/admin/login");
 }
 
-// Tampilkan form login
 app.get("/admin/login", (req, res) => {
   res.render("admin-login", { error: null });
 });
 
-// Proses login: cek password dengan yang ada di .env
 app.post("/admin/login", (req, res) => {
   if (req.body.password === (process.env.ADMIN_PASSWORD || "admin123")) {
     req.session.isAdmin = true;
@@ -227,79 +195,78 @@ app.post("/admin/login", (req, res) => {
   res.render("admin-login", { error: "Password salah." });
 });
 
-// Logout
 app.get("/admin/logout", (req, res) => {
   req.session.destroy(() => res.redirect("/admin/login"));
 });
 
 // Dashboard admin: daftar training + daftar pendaftar
-app.get("/admin", wajibLogin, (req, res) => {
+app.get("/admin", wajibLogin, async (req, res) => {
   res.render("admin", {
-    trainings: db.getTrainings(),
-    registrations: db.getRegistrations().slice().reverse(), // terbaru di atas
+    trainings: await db.getTrainings(),
+    registrations: await db.getRegistrations(),
     editing: null,
   });
 });
 
-// Tampilkan form admin dalam mode EDIT satu training
-app.get("/admin/edit/:id", wajibLogin, (req, res) => {
-  const editing = db.getTrainingById(req.params.id);
+// Form admin dalam mode EDIT satu training
+app.get("/admin/edit/:id", wajibLogin, async (req, res) => {
+  const editing = await db.getTrainingById(req.params.id);
   if (!editing) return res.redirect("/admin");
   res.render("admin", {
-    trainings: db.getTrainings(),
-    registrations: db.getRegistrations().slice().reverse(),
+    trainings: await db.getTrainings(),
+    registrations: await db.getRegistrations(),
     editing,
   });
 });
 
-// Tambah training baru ke katalog
-app.post("/admin/training", wajibLogin, (req, res) => {
-  const { title, category, level, description, duration, certificate, price, color } =
-    req.body;
-
-  const trainings = db.getTrainings();
-  trainings.push({
-    // id dibuat otomatis dari judul, mis. "Cisco CCNA" -> "cisco-ccna"
-    id: slugify(title) + "-" + Date.now().toString().slice(-4),
-    title,
-    category,
-    level,
-    description,
-    duration,
-    certificate,
-    price: Number(price) || 0,
-    color: color || "linear-gradient(135deg,#1428a0,#27c4ff)",
+// Tambah training baru
+app.post("/admin/training", wajibLogin, async (req, res) => {
+  const b = req.body;
+  await db.addTraining({
+    id: slugify(b.title) + "-" + Date.now().toString().slice(-4),
+    title: b.title,
+    category: b.category,
+    level: b.level,
+    description: b.description,
+    duration: b.duration,
+    certificate: b.certificate,
+    price: Number(b.price) || 0,
+    color: b.color || "linear-gradient(135deg,#1428a0,#27c4ff)",
   });
-  db.saveTrainings(trainings);
   res.redirect("/admin");
 });
 
 // Simpan perubahan training (mode edit)
-app.post("/admin/training/:id/update", wajibLogin, (req, res) => {
-  const trainings = db.getTrainings();
-  const t = trainings.find((x) => x.id === req.params.id);
-  if (t) {
-    t.title = req.body.title;
-    t.category = req.body.category;
-    t.level = req.body.level;
-    t.description = req.body.description;
-    t.duration = req.body.duration;
-    t.certificate = req.body.certificate;
-    t.price = Number(req.body.price) || 0;
-    t.color = req.body.color || t.color;
-    db.saveTrainings(trainings);
-  }
+app.post("/admin/training/:id/update", wajibLogin, async (req, res) => {
+  const b = req.body;
+  await db.updateTraining(req.params.id, {
+    title: b.title,
+    category: b.category,
+    level: b.level,
+    description: b.description,
+    duration: b.duration,
+    certificate: b.certificate,
+    price: Number(b.price) || 0,
+    color: b.color,
+  });
   res.redirect("/admin");
 });
 
-// Hapus training dari katalog
-app.post("/admin/training/:id/delete", wajibLogin, (req, res) => {
-  const sisa = db.getTrainings().filter((t) => t.id !== req.params.id);
-  db.saveTrainings(sisa);
+// Hapus training
+app.post("/admin/training/:id/delete", wajibLogin, async (req, res) => {
+  await db.deleteTraining(req.params.id);
   res.redirect("/admin");
 });
 
-// Fungsi bantu: ubah judul menjadi slug (huruf kecil, spasi jadi "-")
+// Lihat bukti pembayaran (mengarahkan ke link sementara S3 / file lokal)
+app.get("/admin/bukti/:id", wajibLogin, async (req, res) => {
+  const reg = await db.getRegistrationById(req.params.id);
+  if (!reg || !reg.proofFile) return res.status(404).render("404");
+  const url = await storage.urlBukti(reg.proofFile);
+  res.redirect(url);
+});
+
+// Ubah judul menjadi slug, mis. "Cisco CCNA" -> "cisco-ccna"
 function slugify(teks) {
   return String(teks)
     .toLowerCase()
@@ -308,16 +275,26 @@ function slugify(teks) {
 }
 
 // ---------------------------------------------------------------
-//  HALAMAN TIDAK DITEMUKAN (404)
+//  HEALTH CHECK (untuk Load Balancer / Auto Scaling)
 // ---------------------------------------------------------------
-app.use((req, res) => {
-  res.status(404).render("404");
-});
+app.get("/health", (req, res) => res.status(200).send("OK"));
+
+// Halaman tidak ditemukan
+app.use((req, res) => res.status(404).render("404"));
 
 // ---------------------------------------------------------------
-//  JALANKAN SERVER
+//  JALANKAN SERVER (siapkan database dulu, baru menerima trafik)
 // ---------------------------------------------------------------
-app.listen(PORT, () => {
-  console.log(`\n  ID-Networkers Galaxy berjalan di http://localhost:${PORT}`);
-  console.log(`  Panel admin: http://localhost:${PORT}/admin\n`);
-});
+db.init()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`\n  ID-Networkers Galaxy berjalan di http://localhost:${PORT}`);
+      console.log(`  Penyimpanan bukti : ${storage.pakaiS3 ? "Amazon S3" : "lokal (folder uploads)"}`);
+      console.log(`  Panel admin       : http://localhost:${PORT}/admin\n`);
+    });
+  })
+  .catch((err) => {
+    console.error("\n  GAGAL terhubung ke database. Cek konfigurasi DB_* di .env.");
+    console.error("  Pesan:", err.message, "\n");
+    process.exit(1); // systemd akan mencoba menjalankan ulang
+  });
