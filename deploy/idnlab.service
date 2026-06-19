@@ -1,9 +1,9 @@
 # ==============================================================
 #  systemd service untuk ID-Networkers Galaxy
-#  Salin ke: /etc/systemd/system/idn-galaxy.service
+#  Salin ke: /etc/systemd/system/idnlab.service
 #  Lalu:     sudo systemctl daemon-reload
-#            sudo systemctl enable idn-galaxy   <-- agar jalan saat boot
-#            sudo systemctl start idn-galaxy
+#            sudo systemctl enable idnlab   <-- agar jalan saat boot
+#            sudo systemctl start idnlab
 #
 #  "enable" inilah kunci auto-start: setiap instance yang lahir
 #  dari AMI (termasuk dari Auto Scaling) akan menjalankan app
@@ -23,7 +23,7 @@ Type=simple
 User=ubuntu
 
 # Lokasi project di server. dotenv akan membaca .env dari sini.
-WorkingDirectory=/opt/idn-galaxy
+WorkingDirectory=/opt/idnlab
 
 # Jalankan app. Cek path node dengan: which node
 ExecStart=/usr/bin/node server.js
@@ -34,7 +34,7 @@ RestartSec=5
 
 Environment=NODE_ENV=production
 
-# Catat log ke journald (lihat dengan: journalctl -u idn-galaxy -f)
+# Catat log ke journald (lihat dengan: journalctl -u idnlab -f)
 StandardOutput=journal
 StandardError=journal
 
