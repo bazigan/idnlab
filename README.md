@@ -21,13 +21,21 @@ Website training bertema **LAB**: katalog dinamis, panel admin, dan pendaftaran 
 
 Butuh **Node.js 18+** dan satu database **MariaDB/MySQL** (lokal atau RDS).
 
-# 0. Install nodejs
 ```bash
+# 0. Install nodejs
 sudo apt-get install -y curl
 curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
 sudo apt-get install -y nodejs
 node -v
+
+# 1. Install MariaDB
+apt install mariadb-server
+
+mysql
+
+grant all privileges on idn.* to 'admin'@'%' identified by 'admin123'
 ```
+
 
 ```bash
 # 1. Install dependency
