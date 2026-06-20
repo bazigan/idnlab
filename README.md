@@ -33,9 +33,10 @@ apt install mariadb-server
 
 mysql
 
-grant all privileges on idn.* to 'admin'@'%' identified by 'admin123'
-```
+create database idn;
 
+grant all privileges on idn.* to 'admin'@'%' identified by 'admin123';
+```
 
 ```bash
 # 1. Install dependency
@@ -46,6 +47,10 @@ cp .env.example .env
 
 # 3. Jalankan (tabel & katalog awal dibuat otomatis saat pertama jalan)
 npm start
+
+# 4. Jalankan di backgorund
+cp /opt/idnlab/deploy/idnlab.service /etc/systemd/system/
+systemctl enable --now idnlab
 ```
 
 Buka **http://localhost:3000** — admin di **/admin** (password default `admin123`).
