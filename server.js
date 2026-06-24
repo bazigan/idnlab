@@ -57,12 +57,90 @@ function rupiah(angka) {
 app.locals.rupiah = rupiah;
 
 // ---------------------------------------------------------------
+//  AWS LAMBDA - Serverless Endpoints
+// ---------------------------------------------------------------
+
+// Proxy request ke Lambda Hello API
+app.get("/api/lambda/hello", async (req, res) => {
+  try {
+    if (!process.env.LAMBDA_HELLO_URL) {
+      return res.status(400).json({ error: "LAMBDA_HELLO_URL tidak dikonfigurasi di .env" });
+    }
+    const response = await fetch(process.env.LAMBDA_HELLO_URL);
+    const data = await response.json();
+    return res.json(data);
+  } catch (err) {
+    console.error("Lambda Hello Error:", err.message);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// Proxy request ke Lambda Test Connection
+app.get("/api/lambda/test", async (req, res) => {
+  try {
+    if (!process.env.LAMBDA_TEST_URL) {
+      return res.status(400).json({ error: "LAMBDA_TEST_URL tidak dikonfigurasi di .env" });
+    }
+    const response = await fetch(process.env.LAMBDA_TEST_URL);
+    const data = await response.json();
+    return res.json(data);
+  } catch (err) {
+    console.error("Lambda Test Error:", err.message);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ---------------------------------------------------------------
+//  AWS COGNITO - Authentication (Optional)
+// ---------------------------------------------------------------
+
+// Cognito callback redirect
+app.get("/callback", async (req, res) => {
+  const { code, error } = req.query;
+  
+  if (error) {
+    console.error("Cognito error:", error);
+    return res.redirect("/");
+  }
+
+  if (!code) {
+    return res.redirect("/");
+  }
+
+  // TODO: Tukar auth code dengan token via Cognito API
+  // Untuk sekarang, ini placeholder
+  req.session.user = {
+    id: "user-" + Date.now(),
+    email: "user@example.com",
+    authenticatedAt: new Date(),
+  };
+
+  res.redirect("/");
+});
+
+// Logout dari Cognito
+app.get("/logout", (req, res) => {
+  req.session.destroy(() => {
+    // Redirect ke Cognito logout URL (optional)
+    const cognitoLogoutUrl = process.env.COGNITO_ENABLED === "true"
+      ? `https://${process.env.COGNITO_DOMAIN}/logout?client_id=${process.env.COGNITO_CLIENT_ID}&logout_uri=http://localhost:${PORT}/`
+      : "/";
+    res.redirect(cognitoLogoutUrl);
+  });
+});
+
+// ---------------------------------------------------------------
 //  HALAMAN PUBLIK (untuk peserta)
 // ---------------------------------------------------------------
 
 // Beranda + katalog training
 app.get("/", async (req, res) => {
-  res.render("index", { trainings: await db.getTrainings() });
+  res.render("index", { 
+    trainings: await db.getTrainings(),
+    user: req.session.user || null,
+    lambdaHelloUrl: process.env.LAMBDA_HELLO_URL || "",
+    lambdaTestUrl: process.env.LAMBDA_TEST_URL || "",
+  });
 });
 
 // Form pendaftaran untuk satu training

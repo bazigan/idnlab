@@ -44,6 +44,41 @@
   </div>
 </section>
 
+<!-- AWS SERVERLESS LAB TEST (Tombol Lambda) -->
+<% if (lambdaHelloUrl || lambdaTestUrl) { %>
+  <section class="serverless-lab" style="background: linear-gradient(135deg,#1ba0d7,#0b67a3); color: white; padding: 60px 20px; text-align: center;">
+    <div class="wrap">
+      <div class="lab-header">
+        <h2 style="margin-bottom: 10px; font-size: 28px;">⚡ AWS Serverless Lab</h2>
+        <p style="margin-bottom: 30px; font-size: 14px; opacity: 0.9;">Test integrasi Lambda functions secara langsung dari web app ini</p>
+      </div>
+      <div class="lab-buttons" style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+        <% if (lambdaHelloUrl) { %>
+          <button 
+            id="lambda-hello-btn"
+            class="btn" 
+            style="background: white; color: #1ba0d7; padding: 12px 28px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;"
+            onclick="callLambdaHello()"
+          >
+            💬 Say Hello from Lambda
+          </button>
+        <% } %>
+        <% if (lambdaTestUrl) { %>
+          <button 
+            id="lambda-test-btn"
+            class="btn"
+            style="background: rgba(255,255,255,0.2); color: white; padding: 12px 28px; border: 2px solid white; border-radius: 6px; font-weight: bold; cursor: pointer;"
+            onclick="callLambdaTest()"
+          >
+            🔗 Test Lambda Connection
+          </button>
+        <% } %>
+      </div>
+      <div id="lambda-result" style="margin-top: 20px; font-size: 13px; min-height: 30px;"></div>
+    </div>
+  </section>
+<% } %>
+
 <!-- KATALOG TRAINING (dirender dari data) -->
 <section class="train" id="training">
   <div class="wrap">
@@ -110,5 +145,58 @@
     </div>
   </div>
 </section>
+
+<!-- Lambda Helper Functions -->
+<script>
+async function callLambdaHello() {
+  const btn = document.getElementById('lambda-hello-btn');
+  const result = document.getElementById('lambda-result');
+  
+  btn.disabled = true;
+  btn.textContent = '⏳ Loading...';
+  result.textContent = '';
+  
+  try {
+    const response = await fetch('/api/lambda/hello');
+    const data = await response.json();
+    
+    if (response.ok) {
+      result.innerHTML = `✅ <b>${data.message}</b> @ ${data.timestamp}`;
+    } else {
+      result.innerHTML = `❌ Error: ${data.error}`;
+    }
+  } catch (err) {
+    result.innerHTML = `❌ Error: ${err.message}`;
+  }
+  
+  btn.disabled = false;
+  btn.textContent = '💬 Say Hello from Lambda';
+}
+
+async function callLambdaTest() {
+  const btn = document.getElementById('lambda-test-btn');
+  const result = document.getElementById('lambda-result');
+  
+  btn.disabled = true;
+  btn.textContent = '⏳ Testing...';
+  result.textContent = '';
+  
+  try {
+    const response = await fetch('/api/lambda/test');
+    const data = await response.json();
+    
+    if (response.ok && data.status === 'SUCCESS') {
+      result.innerHTML = `✅ <b>${data.message}</b> (${data.processingTime})`;
+    } else {
+      result.innerHTML = `❌ Error: ${data.message || 'Connection failed'}`;
+    }
+  } catch (err) {
+    result.innerHTML = `❌ Error: ${err.message}`;
+  }
+  
+  btn.disabled = false;
+  btn.textContent = '🔗 Test Lambda Connection';
+}
+</script>
 
 <%- include("partials/footer") %>
