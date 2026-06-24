@@ -100,13 +100,18 @@ app.get("/login", (req, res) => {
     return res.status(400).send("Cognito belum diaktifkan. Set COGNITO_ENABLED=true di .env");
   }
 
-  const redirectUri = encodeURIComponent(process.env.COGNITO_REDIRECT_URI || `http://localhost:${PORT}/callback`);
+  const redirectUri = process.env.COGNITO_REDIRECT_URI || `http://localhost:${PORT}/callback`;
   const clientId = process.env.COGNITO_CLIENT_ID;
   const domain = process.env.COGNITO_DOMAIN;
 
-  const loginUrl = `https://${domain}/oauth2/authorize?client_id=${clientId}&response_type=code&scope=openid+email+profile&redirect_uri=${redirectUri}`;
+  const params = new URLSearchParams({
+    client_id: clientId,
+    response_type: "code",
+    scope: "openid email profile",
+    redirect_uri: redirectUri,
+  });
 
-  res.redirect(loginUrl);
+  res.redirect(`https://${domain}/login?${params.toString()}`);
 });
 
 // Cognito callback redirect - tukar auth code dengan token
