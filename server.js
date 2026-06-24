@@ -56,6 +56,22 @@ function rupiah(angka) {
 }
 app.locals.rupiah = rupiah;
 
+function getCognitoRedirectUri(req) {
+  if (process.env.COGNITO_REDIRECT_URI) {
+    return process.env.COGNITO_REDIRECT_URI;
+  }
+
+  const forwardedProto = req.headers["x-forwarded-proto"];
+  const protocol = forwardedProto ? forwardedProto.split(",")[0].trim() : req.protocol || "http";
+  const host = req.get("host");
+  return `${protocol}://${host}/callback`;
+}
+
+function getAppBaseUrl(req) {
+  const redirectUri = getCognitoRedirectUri(req);
+  return redirectUri.replace(/\/callback$/, "");
+}
+
 // ---------------------------------------------------------------
 //  AWS LAMBDA - Serverless Endpoints
 // ---------------------------------------------------------------
@@ -100,7 +116,7 @@ app.get("/login", (req, res) => {
     return res.status(400).send("Cognito belum diaktifkan. Set COGNITO_ENABLED=true di .env");
   }
 
-  const redirectUri = process.env.COGNITO_REDIRECT_URI || `http://localhost:${PORT}/callback`;
+  const redirectUri = getCognitoRedirectUri(req);
   const clientId = process.env.COGNITO_CLIENT_ID;
   const domain = process.env.COGNITO_DOMAIN;
 
@@ -132,7 +148,7 @@ app.get("/callback", async (req, res) => {
     const domain = process.env.COGNITO_DOMAIN;
     const clientId = process.env.COGNITO_CLIENT_ID;
     const clientSecret = process.env.COGNITO_CLIENT_SECRET;
-    const redirectUri = process.env.COGNITO_REDIRECT_URI || `http://localhost:${PORT}/callback`;
+    const redirectUri = getCognitoRedirectUri(req);
 
     const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
 
@@ -181,13 +197,13 @@ app.get("/callback", async (req, res) => {
 
 // Logout dari Cognito
 app.get("/logout", (req, res) => {
-  const redirectUri = encodeURIComponent(`http://localhost:${PORT}/`);
+  const logoutUri = encodeURIComponent(getAppBaseUrl(req));
   const domain = process.env.COGNITO_DOMAIN;
   const clientId = process.env.COGNITO_CLIENT_ID;
 
   req.session.destroy(() => {
     if (process.env.COGNITO_ENABLED === "true") {
-      const cognitoLogoutUrl = `https://${domain}/logout?client_id=${clientId}&logout_uri=${redirectUri}`;
+      const cognitoLogoutUrl = `https://${domain}/logout?client_id=${clientId}&logout_uri=${logoutUri}`;
       res.redirect(cognitoLogoutUrl);
     } else {
       res.redirect("/");
