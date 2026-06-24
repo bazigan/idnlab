@@ -94,39 +94,115 @@ app.get("/api/lambda/test", async (req, res) => {
 //  AWS COGNITO - Authentication (Optional)
 // ---------------------------------------------------------------
 
-// Cognito callback redirect
+// Generate Cognito login URL
+app.get("/login", (req, res) => {
+  if (process.env.COGNITO_ENABLED !== "true") {
+    return res.status(400).send("Cognito belum diaktifkan. Set COGNITO_ENABLED=true di .env");
+  }
+
+  const redirectUri = encodeURIComponent(process.env.COGNITO_REDIRECT_URI || `http://localhost:${PORT}/callback`);
+  const clientId = process.env.COGNITO_CLIENT_ID;
+  const domain = process.env.COGNITO_DOMAIN;
+
+  const loginUrl = `https://${domain}/oauth2/authorize?client_id=${clientId}&response_type=code&scope=openid+email+profile&redirect_uri=${redirectUri}`;
+
+  res.redirect(loginUrl);
+});
+
+// Cognito callback redirect - tukar auth code dengan token
 app.get("/callback", async (req, res) => {
-  const { code, error } = req.query;
+  const { code, error, error_description } = req.query;
   
   if (error) {
-    console.error("Cognito error:", error);
-    return res.redirect("/");
+    console.error("Cognito error:", error, error_description);
+    return res.redirect("/?login=failed");
   }
 
   if (!code) {
     return res.redirect("/");
   }
 
-  // TODO: Tukar auth code dengan token via Cognito API
-  // Untuk sekarang, ini placeholder
-  req.session.user = {
-    id: "user-" + Date.now(),
-    email: "user@example.com",
-    authenticatedAt: new Date(),
-  };
+  try {
+    // Tukar auth code dengan token
+    const domain = process.env.COGNITO_DOMAIN;
+    const clientId = process.env.COGNITO_CLIENT_ID;
+    const clientSecret = process.env.COGNITO_CLIENT_SECRET;
+    const redirectUri = process.env.COGNITO_REDIRECT_URI || `http://localhost:${PORT}/callback`;
 
-  res.redirect("/");
+    const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
+
+    const tokenResponse = await fetch(`https://${domain}/oauth2/token`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Authorization: `Basic ${basicAuth}`,
+      },
+      body: new URLSearchParams({
+        grant_type: "authorization_code",
+        code: code,
+        redirect_uri: redirectUri,
+      }),
+    });
+
+    const tokenData = await tokenResponse.json();
+
+    if (!tokenResponse.ok) {
+      console.error("Token exchange error:", tokenData);
+      return res.redirect("/?login=failed");
+    }
+
+    // Decode ID token (simple JWT decode tanpa verifikasi signature)
+    const idToken = tokenData.id_token;
+    const payloadBase64 = idToken.split(".")[1];
+    const payload = JSON.parse(Buffer.from(payloadBase64, "base64").toString());
+
+    // Simpan user info ke session
+    req.session.user = {
+      id: payload.sub,
+      email: payload.email,
+      name: payload.name || payload.email,
+      authenticatedAt: new Date(),
+      idToken: idToken,
+      accessToken: tokenData.access_token,
+    };
+
+    console.log(`✅ User ${payload.email} berhasil login via Cognito`);
+    res.redirect("/?login=success");
+  } catch (err) {
+    console.error("Callback error:", err.message);
+    res.redirect("/?login=error");
+  }
 });
 
 // Logout dari Cognito
 app.get("/logout", (req, res) => {
+  const redirectUri = encodeURIComponent(`http://localhost:${PORT}/`);
+  const domain = process.env.COGNITO_DOMAIN;
+  const clientId = process.env.COGNITO_CLIENT_ID;
+
   req.session.destroy(() => {
-    // Redirect ke Cognito logout URL (optional)
-    const cognitoLogoutUrl = process.env.COGNITO_ENABLED === "true"
-      ? `https://${process.env.COGNITO_DOMAIN}/logout?client_id=${process.env.COGNITO_CLIENT_ID}&logout_uri=http://localhost:${PORT}/`
-      : "/";
-    res.redirect(cognitoLogoutUrl);
+    if (process.env.COGNITO_ENABLED === "true") {
+      const cognitoLogoutUrl = `https://${domain}/logout?client_id=${clientId}&logout_uri=${redirectUri}`;
+      res.redirect(cognitoLogoutUrl);
+    } else {
+      res.redirect("/");
+    }
   });
+});
+
+// Check login status (untuk UI)
+app.get("/api/user", (req, res) => {
+  if (req.session.user) {
+    return res.json({
+      authenticated: true,
+      user: {
+        id: req.session.user.id,
+        email: req.session.user.email,
+        name: req.session.user.name,
+      },
+    });
+  }
+  res.json({ authenticated: false });
 });
 
 // ---------------------------------------------------------------

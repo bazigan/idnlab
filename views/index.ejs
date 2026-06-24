@@ -10,6 +10,13 @@
     <div class="hero-cta">
       <a href="#training" class="btn btn-grad" data-ripple>Lihat Semua Training</a>
       <a href="#kenapa" class="btn btn-ghost" data-ripple>Kenapa IDN?</a>
+      <% if (typeof user !== 'undefined' && user) { %>
+        <div style="margin-top: 10px; font-size: 12px;">
+          👤 <%= user.name %> | <a href="/logout" style="color: #fff; text-decoration: underline;">Logout</a>
+        </div>
+      <% } else if (process.env.COGNITO_ENABLED === 'true') { %>
+        <a href="/login" class="btn btn-secondary" data-ripple style="margin-left: 10px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.5);">🔐 Login Cognito</a>
+      <% } %>
     </div>
     <div class="hero-note">
       <span><span class="tick">✓</span> 1 orang 1 perangkat lab</span>
@@ -51,6 +58,9 @@
       <div class="lab-header">
         <h2 style="margin-bottom: 10px; font-size: 28px;">⚡ AWS Serverless Lab</h2>
         <p style="margin-bottom: 30px; font-size: 14px; opacity: 0.9;">Test integrasi Lambda functions secara langsung dari web app ini</p>
+        <% if (typeof user !== 'undefined' && user) { %>
+          <p style="margin-bottom: 15px; font-size: 13px; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 4px;">📧 Logged in as: <b><%= user.name %></b> (<%= user.email %>)</p>
+        <% } %>
       </div>
       <div class="lab-buttons" style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
         <% if (lambdaHelloUrl) { %>
